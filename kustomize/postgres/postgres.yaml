@@ -45,6 +45,18 @@ spec:
                 matchLabels:
                   postgres-operator.crunchydata.com/cluster: hippo
                   postgres-operator.crunchydata.com/instance-set: db2
+
+  # add new user rhino, hippo still exist
+  # db name here is postgres db name, not db1, db2 instance's name above
+  users:
+    - name: rhino
+      databases:
+        - payment
+        - finance
+    - name: f2e
+      databases:
+        - f2e-local-pgo
+
   backups:
     pgbackrest:
       image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.47-0
@@ -81,20 +93,20 @@ spec:
       # Comment this custom service, let as default: 
       # We'll got service: `hippo-pgbouncer   ClusterIP  pgbouncer:5432►0`
       #
-      # service:
-      #   metadata:
-      #     labels:
-      #       app: f2e-api
-      #   type: NodePort
-      #   nodePort: 35432
+      service:
+        metadata:
+          labels:
+            app: f2e-api
+        type: NodePort
+        nodePort: 30001
   
   # But it still not work as expected, no 35432 port service created :(
-  # service:
-  #   metadata:
-  #     labels:
-  #       app: f2e-api
-  #   type: NodePort
-  #   nodePort: 35432
+  service:
+    metadata:
+      labels:
+        app: f2e-api
+    type: NodePort
+    nodePort: 30000
 
   monitoring:
     pgmonitor:
