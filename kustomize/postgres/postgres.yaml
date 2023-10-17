@@ -5,10 +5,16 @@ metadata:
 spec:
   image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-15.4-0
   postgresVersion: 15
+
+  # HA:
+  # https://access.crunchydata.com/documentation/postgres-operator/5.0.1/tutorial/high-availability/
+  # https://stackoverflow.com/questions/77309504/crunchy-postgres-operator-whats-the-different-and-use-cases-between-spec-insta
+  #
   instances:
     # name `db` will create pod name like: hippo-db1-lct8-0
-    - name: db1
-      replicas: 2
+    - name: i1
+      replicas: 1
+      # replicas: 2
       dataVolumeClaimSpec:
         accessModes:
         - "ReadWriteOnce"
@@ -24,10 +30,8 @@ spec:
               labelSelector:
                 matchLabels:
                   postgres-operator.crunchydata.com/cluster: hippo
-                  postgres-operator.crunchydata.com/instance-set: db1
-    
-    # What kind of replicas this
-    - name: db2
+                  postgres-operator.crunchydata.com/instance-set: i1
+    - name: i2
       replicas: 1
       dataVolumeClaimSpec:
         accessModes:
@@ -44,7 +48,7 @@ spec:
               labelSelector:
                 matchLabels:
                   postgres-operator.crunchydata.com/cluster: hippo
-                  postgres-operator.crunchydata.com/instance-set: db2
+                  postgres-operator.crunchydata.com/instance-set: i2
 
   # add new user rhino, hippo still exist
   # db name here is postgres db name, not db1, db2 instance's name above
@@ -85,14 +89,7 @@ spec:
                 matchLabels:
                   postgres-operator.crunchydata.com/cluster: hippo
                   postgres-operator.crunchydata.com/role: pgbouncer
-
-      # spec.proxy.pgBouncer.service
-      # expose to the world => add this will failed to create pods, plz check
-      # For more detail on definition: See the kustomize/install/crd/base/postgres-operator.crunchydata.com_postgresclusters.yaml
-      # But it still not work as expected, no 35432 port service created :(
-      # Comment this custom service, let as default: 
-      # We'll got service: `hippo-pgbouncer   ClusterIP  pgbouncer:5432►0`
-      #
+      # pgbouncer service
       service:
         metadata:
           labels:
@@ -100,7 +97,7 @@ spec:
         type: NodePort
         nodePort: 30001
   
-  # But it still not work as expected, no 35432 port service created :(
+  # hippo-ha service
   service:
     metadata:
       labels:

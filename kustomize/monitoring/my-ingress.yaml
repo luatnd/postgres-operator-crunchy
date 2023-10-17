@@ -11,7 +11,11 @@ metadata:
   name: mon-pgo-ingress
   namespace: postgres-operator
 spec:
-  ingressClassName: nginx
+  # How to get class name?
+  # Depend on setup of ingress controller
+  #   kubectl get ingressClass --all-namespaces
+  ingressClassName: traefik
+  # ingressClassName: nginx
   rules:
     - host: mon-pgo.mxn0.store
       http:
